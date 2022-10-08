@@ -1,6 +1,6 @@
 <template>
-  <div class="goods-item">
-    <img :src="goodItem.show.img" alt="">
+  <div class="goods-item" @click="itemClick">
+    <img :src="goodItem.show.img" alt="" @load="imageLoad">
     <div class="goods-info">
       <p >{{goodItem.title}}</p>
       <span class="price">{{goodItem.price}}</span>
@@ -11,17 +11,26 @@
 </template>
 
 <script>
-    export default {
-        name: "GoodsListItem",
-        props:{
-            goodItem: {
-                type: Object,
-                default() {
-                    return {}
-                }
-            }
+  export default {
+    name: "GoodsListItem",
+    props:{
+      goodItem: {
+        type: Object,
+        default() {
+            return {}
         }
+      }
+    },
+    methods:{
+      imageLoad(){//vue监听加载图片的方法
+        // console.log('imageLoad');
+        this.$bus.$emit('itemImageLoad')
+      },
+      itemClick(){//进入商品详情业
+        this.$router.push('/detail/' + this.goodItem.iid)
+      }
     }
+  }
 </script>
 
 <style scoped>
