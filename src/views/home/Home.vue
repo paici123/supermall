@@ -27,16 +27,10 @@
   import TabControl from '../../components/content/tabControl/TabControl'
   import GoodList from '../../components/content/goods/GoodsList'
   import Scroll from '../../components/common/scroll/Scroll'
-  import BackTop from '../../components/content/backTop/BackTop';
 
-  import {
-    getHomeMultidata,
-    getHomeGoods
-  } from '../../network/home'
-  import {
-    debounce
-  } from '../../common/utils'
-
+  import {itemListenerMixin,backTopMixin} from '../../common/mixin'
+  import {getHomeMultidata,getHomeGoods} from '../../network/home'
+  import {debounce} from '../../common/utils'
 
   export default {
     name: 'Home',
@@ -48,8 +42,8 @@
       TabControl,
       GoodList,
       Scroll,
-      BackTop
     },
+    mixins:[itemListenerMixin,backTopMixin],
     //保存请求过来的数据
     data() {
       return {
@@ -71,10 +65,9 @@
           },
         },
         currentType: 'pop',
-        isShowBackTop: false,
         tabOffsetTop: 0,
         isTabFixed: false,
-        saveY: 0
+        saveY: 0,
       }
     },
     computed: { //计算属性
@@ -90,7 +83,10 @@
       this.$refs.scroll.refresh() //刷新
     },
     deactivated() {
+      //1.保存Y值
       this.saveY = this.$refs.scroll.getScrollY()
+      //2.取消全局事件的监听
+      this.$bus.$off('itemImgload',this.itemImgListener)
     },
     created() { //vue实例创建之前不能有参数  所以使用methods封装
       //1.请求多个数据
@@ -99,19 +95,10 @@
       this.getHomeGoods('pop');
       this.getHomeGoods('new');
       this.getHomeGoods('sell');
+      //3.手动代码点击一次
+      // this.tabClick(0)
     },
     mounted() {
-      // ref如果是绑定在组件中的，那么通过this.$refs.refname获取到的是一个组件对象
-      // 如果是绑定在普通的元素中，那么通过this.$refs.refname获取到的是一个元素对象
-      // this.$refs.swiper
-      //1.监听item中的图片加载完成
-      const refresh = debounce(this.$refs.scroll.refresh, 200)
-      this.$bus.$on('itemImageLoad', () => {
-        // console.log('---------');
-        // this.$refs.scroll && this.$refs.scroll.refresh()
-        refresh();
-      });
-
     },
     methods: {
       /*  事件监听的方法    */
@@ -128,19 +115,17 @@
             this.currentType = 'sell'
             break;
         }
-        //解决两个三页切换一致的效果
+        // this.showGcods = this.goods[this.currentType].list
+        //让两个TabControl的currentIndex保存一致
         this.$refs.tabControl1.currentIndex = index
         this.$refs.tabControl2.currentIndex = index
-      },
-      backClick() { //点击图片回到顶部
-        this.$refs.scroll.scrollTo(0, 0)
       },
       contentScroll(position) { //监听滚动的位置
         // console.log(position);
         //1.判断BackTop是否显示
-        this.isShowBackTop = -position.y > 1000
+        this.listenShowBackTop(position);
         //2.决定tabControl是否吸顶(position:fixed)
-        this.isTabFixed = (-position.y) > this.tabOffsetTop
+        this.isTabFixed = (-position.y) > this.tabOffsetTop;
       },
       loadMore() { //获取三页的上拉加载更多
         this.getHomeGoods(this.currentType)
@@ -156,7 +141,7 @@
           // console.log(res);
           // this.result = res;
           this.banners = res.data.banner.list,
-            this.recommends = res.data.recommend.list
+          this.recommends = res.data.recommend.list
         })
       },
       getHomeGoods(type) {

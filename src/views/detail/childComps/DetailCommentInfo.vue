@@ -28,7 +28,6 @@
 
 <script>
   import {formatDate} from "@/common/utils";
-
   export default {
 		name: "DetailCommentInfo",
     props: {

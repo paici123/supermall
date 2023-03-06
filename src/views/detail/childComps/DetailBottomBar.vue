@@ -26,7 +26,7 @@
 		name: "DetailBottomBar",
     methods: {
       addToCart() {
-        this.$emit('addToCart')
+        this.$emit('addCart')//发送事件：子组件DetailBottomBar给Detail父组件发送
       }
     }
 	}

@@ -1,6 +1,6 @@
 <template>
   <div class="goods-item" @click="itemClick">
-    <img :src="goodItem.show.img" alt="" @load="imageLoad">
+    <img :src="showImage" alt="" @load="imageLoad">
     <div class="goods-info">
       <p >{{goodItem.title}}</p>
       <span class="price">{{goodItem.price}}</span>
@@ -21,10 +21,20 @@
         }
       }
     },
+    computed:{
+      showImage(){
+        return this.goodItem.image || this.goodItem.show.img
+      }
+    },
     methods:{
       imageLoad(){//vue监听加载图片的方法
         // console.log('imageLoad');
         this.$bus.$emit('itemImageLoad')
+        // if(this.$route.path.indexOf('/home')){
+        //   this.$bus.$emit('homeItemImageLoad')
+        // }else if(this.$route.path.indexOf('./detail')){
+        //   this.$bus.$emit('detailItemImageLoad')
+        // }
       },
       itemClick(){//进入商品详情业
         this.$router.push('/detail/' + this.goodItem.iid)
